@@ -37,6 +37,7 @@ Records Grab_Emp_Record(fstream &empin) {
     Records emp;
     // grab entire line
     if (getline(empin, line, '\n')) {
+        std::cout << line << endl;
         // turn line into a stream
         stringstream s(line);
         // gets everything in stream up to comma
