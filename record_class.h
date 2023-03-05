@@ -37,7 +37,6 @@ Records Grab_Emp_Record(fstream &empin) {
     Records emp;
     // grab entire line
     if (getline(empin, line, '\n')) {
-        std::cout << line << endl;
         // turn line into a stream
         stringstream s(line);
         // gets everything in stream up to comma
@@ -71,12 +70,14 @@ Records Grab_Dept_Record(fstream &deptin) {
     if (getline(deptin, line, '\n')) {
         stringstream s(line);
         getline(s, word,',');
+        //cout << "trying stoi for did" << endl;
         dept.dept_record.did = stoi(word);
         getline(s, word, ',');
         dept.dept_record.dname = word;
         getline(s, word, ',');
         dept.dept_record.budget = stod(word);
         getline(s, word, ',');
+        //cout << "trying stoi for managerid" << endl;
         dept.dept_record.managerid = stoi(word);
 
         //Ensuring that you cannot use both structure (EmpEecord, DeptRecord) at the same memory block / time 

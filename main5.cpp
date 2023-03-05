@@ -48,17 +48,83 @@ void Sort_Buffer(bool emp){
 
 //Prints out the attributes from empRecord and deptRecord when a join condition is met 
 //and puts it in file Join.csv
-void PrintJoin() {
-    
+void PrintJoin(bool sortingDept, fstream &output) {
+    cout << endl << endl;
+    if(sortingDept){
+        cout << buffers[0].dept_record.managerid << "\t" << buffers[1].emp_record.eid << endl;
+        output << buffers[0].dept_record.did << "," << buffers[0].dept_record.dname << "," << to_string((int)buffers[0].dept_record.budget) << "," <<buffers[0].dept_record.managerid << "," << buffers[1].emp_record.ename << "," << buffers[1].emp_record.age << "," << buffers[1].emp_record.salary << endl;
+    }
+    else{
+        cout << buffers[0].emp_record.eid << "\t" << buffers[1].dept_record.managerid << endl;
+        output << buffers[1].dept_record.did << "," << buffers[1].dept_record.dname << "," << to_string((int)buffers[1].dept_record.budget) << "," <<buffers[1].dept_record.managerid << "," << buffers[0].emp_record.ename << "," << buffers[0].emp_record.age << "," << buffers[0].emp_record.salary << endl;
+    }
+    cout << endl << endl;
     return;
 }
 
 //Use main memory to Merge and Join tuples 
 //which are already sorted in 'runs' of the relations Dept and Emp 
 void Merge_Join_Runs(fstream &join){
-    string left = numEmpRuns < numDeptRuns ? "emp_run_" : "dept_run_";
-    //and store the Joined new tuples using PrintJoin()
+    bool sortingDept = numDeptRuns <= numEmpRuns;
+    string l, r;
+    Records (*GrabLRecord)(fstream&);
+    Records (*GrabRRecord)(fstream&);
+    int leftNum, rightNum;
+    if(sortingDept){
+        leftNum = numDeptRuns;
+        rightNum = numEmpRuns;
+        l = string("dept_run_");
+        r = string("emp_run_");
+        GrabLRecord = &Grab_Dept_Record;
+        GrabRRecord = &Grab_Emp_Record;
+    }
+    else{
+        leftNum = numEmpRuns;
+        rightNum = numDeptRuns;
+        l = string("emp_run_");
+        r = string("dept_run_");
+        GrabLRecord = &Grab_Emp_Record;
+        GrabRRecord = &Grab_Dept_Record;
+    }
+    fstream left;
+    fstream right[rightNum];
     
+    for(int i = 0; i < leftNum; ++i){
+        left.open(l+to_string(i), ios::in);
+        for(int ii = 0; ii < rightNum; ++ii){
+            cout << r + to_string(ii) << endl;
+            right[ii].open(r+to_string(ii), ios::in | ios::binary);
+        }
+        int lComp, rComp;
+        cout << "outer whiles" << endl;
+        buffers[0] = GrabLRecord(left);
+        while(buffers[0].no_values != -1){
+            cout << buffers[0].emp_record.eid << "\t" << buffers[0].dept_record.managerid << endl;
+            lComp = sortingDept ? buffers[0].dept_record.managerid : buffers[0].emp_record.eid;
+            for(int ii = 0; ii < rightNum; ++ii){
+                streamoff bitch = 0;
+                cout << "inner whiles" << endl;
+                do{
+                    
+                    bitch = right[ii].tellg();
+                    buffers[1] = GrabRRecord(right[ii]);
+                    cout << buffers[1].emp_record.eid << "\t" << buffers[1].dept_record.managerid << endl;
+                    rComp = sortingDept ? buffers[1].emp_record.eid : buffers[1].dept_record.managerid;
+                }while(buffers[1].no_values != -1 && lComp > rComp);
+                right[ii].seekg(bitch);
+                cout << endl;
+                cout << lComp << "\t" << rComp << endl;
+                cout << endl;
+                if(lComp == rComp){
+                    PrintJoin(sortingDept, join);
+                    break;
+                }
+            }
+            buffers[0] = GrabLRecord(left);
+        }
+    }
+    //and store the Joined new tuples using PrintJoin()
+
     return;
 }
 
@@ -69,8 +135,7 @@ int main() {
     fstream empin;
     fstream deptin;
     empin.open("Emp.csv", ios::in);
-    deptin.open("Dept.csv", ios::in);
-   
+    deptin.open("Dept.csv", ios::in);   
     //Creating the Join.csv file where we will store our joined results
     fstream joinout;
     joinout.open("Join.csv", ios::out | ios::trunc);
@@ -96,7 +161,7 @@ int main() {
     }
 
     //2. Use Merge_Join_Runs() to Join the runs of Dept and Emp relations 
-
+    Merge_Join_Runs(joinout);
 
     //Please delete the temporary files (runs) after you've joined both Emp.csv and Dept.csv
 
