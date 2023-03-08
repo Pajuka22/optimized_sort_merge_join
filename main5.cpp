@@ -3,7 +3,7 @@
 
 #include <bits/stdc++.h>
 #include "record_class.h"
-
+#include <stdio.h>
 using namespace std;
 
 //defines how many blocks are available in the Main Memory 
@@ -164,6 +164,11 @@ int main() {
     Merge_Join_Runs(joinout);
 
     //Please delete the temporary files (runs) after you've joined both Emp.csv and Dept.csv
-
+    for(int i = 0; i < numDeptRuns; ++i){
+        remove((string("dept_run_")+to_string(i)).c_str());
+    }
+    for(int i = 0; i < numEmpRuns; ++i){
+        remove((string("emp_run_")+to_string(i)).c_str());
+    }
     return 0;
 }
